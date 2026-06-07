@@ -3,6 +3,7 @@
 [![IETF Datatracker](https://img.shields.io/badge/IETF-Datatracker-blue)](https://datatracker.ietf.org/doc/draft-vicente-pquip-multitenant-pki-requirements/)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](LICENSE)
 [![Patent Pending](https://img.shields.io/badge/Patent-Pending-red.svg)](#ipr--patent-notice)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20584893.svg)](https://doi.org/10.5281/zenodo.20584893)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0006--6395--5308-A6CE39.svg)](https://orcid.org/0009-0006-6395-5308)
 
 **Requirements and Gaps for Post-Quantum Certificate Rotation in Multi-Tenant Public Key Infrastructure Environments**
@@ -46,7 +47,11 @@ The text of this document is released under [Creative Commons Attribution 4.0 In
 
 ## Citation
 
-See [`CITATION.cff`](CITATION.cff). Once a release is tagged and Zenodo sync is enabled, a DOI will be minted; that DOI will be added here.
+**Zenodo Archive (Concept DOI — always latest):** [10.5281/zenodo.20584893](https://doi.org/10.5281/zenodo.20584893)
+
+**v1.0.0 release** archived: see [GitHub releases](https://github.com/Sanc-Admin/pquip-multitenant-pki-requirements/releases/tag/v1.0.0).
+
+Machine-readable citation metadata in [`CITATION.cff`](CITATION.cff).
 
 ## Repository Contents
 
