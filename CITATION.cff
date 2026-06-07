@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you reference this work, please cite as below."
+type: report
+title: "Requirements and Gaps for Post-Quantum Certificate Rotation in Multi-Tenant Public Key Infrastructure Environments"
+authors:
+  - family-names: Vicente
+    given-names: Brian
+    affiliation: Sanctum SecOps LLC
+    email: bvicente@sanctumsecops.com
+    orcid: "https://orcid.org/0009-0006-6395-5308"
+    address: "Pine City, NY, USA"
+date-released: 2026-06-05
+url: "https://datatracker.ietf.org/doc/draft-vicente-pquip-multitenant-pki-requirements/"
+repository-code: "https://github.com/Sanc-Admin/pquip-multitenant-pki-requirements"
+keywords:
+  - post-quantum cryptography
+  - PQC
+  - PKI
+  - IETF
+  - Internet-Draft
+license: CC-BY-4.0

@@ -1,0 +1,448 @@
+
+
+
+
+Post-Quantum Use In Protocols (pquip)                         B. Vicente
+Internet-Draft                                        Sanctum SecOps LLC
+Intended status: Informational                               5 June 2026
+Expires: 7 December 2026
+
+
+ Requirements and Gaps for Post-Quantum Certificate Rotation in Multi-
+             Tenant Public Key Infrastructure Environments
+          draft-vicente-pquip-multitenant-pki-requirements-00
+
+Abstract
+
+   Organizations operating Public Key Infrastructure (PKI) across
+   multiple isolated tenant environments face a critical gap: existing
+   PKI management protocols and standards do not address the
+   coordination requirements for post-quantum cryptographic (PQC)
+   algorithm migration in shared, multi-tenant certificate authority
+   deployments.  This document identifies the functional requirements
+   and open protocol gaps that must be addressed to enable safe,
+   consistent, and auditable PQC certificate rotation across multi-
+   tenant PKI environments.  No new protocol mechanisms are specified;
+   this is an informational requirements document intended to motivate
+   future standards work.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 7 December 2026.
+
+Copyright Notice
+
+   Copyright (c) 2026 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+
+
+
+
+
+Vicente                  Expires 7 December 2026                [Page 1]
+
+Internet-Draft      Multi-Tenant PKI PQC Requirements          June 2026
+
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+     1.1.  Requirements Language . . . . . . . . . . . . . . . . . .   3
+   2.  Problem Statement . . . . . . . . . . . . . . . . . . . . . .   3
+   3.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   3
+   4.  Scope and Limitations of Existing Standards . . . . . . . . .   4
+     4.1.  ACME (RFC 8555) . . . . . . . . . . . . . . . . . . . . .   4
+     4.2.  X.509 and RFC 5280  . . . . . . . . . . . . . . . . . . .   4
+     4.3.  Cryptographic Algorithm Agility (RFC 7696)  . . . . . . .   5
+     4.4.  Related Certificates (RFC 9763) . . . . . . . . . . . . .   5
+     4.5.  Hybrid Scheme Terminology (RFC 9794)  . . . . . . . . . .   5
+   5.  Functional Requirements . . . . . . . . . . . . . . . . . . .   5
+     5.1.  Algorithm Policy Consistency  . . . . . . . . . . . . . .   5
+     5.2.  Issuance Integrity  . . . . . . . . . . . . . . . . . . .   6
+     5.3.  Rotation Coordination . . . . . . . . . . . . . . . . . .   6
+     5.4.  Compliance Reporting  . . . . . . . . . . . . . . . . . .   6
+   6.  Security Considerations . . . . . . . . . . . . . . . . . . .   6
+   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
+   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   7
+     8.1.  Normative References  . . . . . . . . . . . . . . . . . .   7
+     8.2.  Informative References  . . . . . . . . . . . . . . . . .   8
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   8
+
+1.  Introduction
+
+   The publication of NIST FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), and
+   FIPS 205 (SLH-DSA) in 2024 has initiated a global transition away
+   from quantum-vulnerable cryptographic algorithms toward post-quantum
+   alternatives.  For organizations operating certificate authority (CA)
+   infrastructure, this transition requires replacing classical key
+   exchange and signature algorithms across all issued certificates,
+   OCSP responders, CRL signing keys, and TLS endpoints before
+   applicable regulatory deadlines.
+
+   The NSA Commercial National Security Algorithm Suite 2.0 (CNSA 2.0)
+   establishes concrete migration deadlines: PQC algorithms are required
+   for software and firmware signing by 2027, for TLS and certificate
+   infrastructure by 2029, and classical algorithm use is to be retired
+   by 2033.
+
+
+
+
+
+Vicente                  Expires 7 December 2026                [Page 2]
+
+Internet-Draft      Multi-Tenant PKI PQC Requirements          June 2026
+
+
+   Multi-tenant PKI deployments — where a single CA platform issues
+   certificates for multiple independent organizational tenants with
+   isolated trust anchors and policy domains — present unique
+   coordination challenges not addressed by existing IETF protocols.
+   This document describes those challenges and derives functional
+   requirements for a compliant solution.
+
+1.1.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in BCP
+   14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals.
+
+2.  Problem Statement
+
+   Existing PKI management protocols — including the Automatic
+   Certificate Management Environment (ACME) [RFC8555], Certificate
+   Management over CMS (CMC) [RFC5272], and the base X.509 profile
+   [RFC5280] — were designed for single-tenant or hierarchically-managed
+   CA environments.  They do not specify:
+
+   *  Mechanisms to detect and report algorithm configuration divergence
+      between the CA policy and the algorithms in use across active
+      tenant certificate populations (configuration drift).
+
+   *  Procedures to ensure that a certificate issuance transaction
+      maintains semantic consistency with the issuing tenant's declared
+      cryptographic policy at the time of issuance.
+
+   *  Protocols for coordinating the sequencing of certificate rotation
+      actions across tenants in a manner that accounts for network
+      topology and service dependency constraints.
+
+   *  Audit mechanisms that provide tenant-isolated, per-transaction
+      evidence of algorithm compliance at issuance time.
+
+   Without addressing these gaps, a multi-tenant PKI operator has no
+   standardized mechanism to guarantee that all tenants have completed
+   PQC migration in a coordinated, consistent, and auditable manner
+   before regulatory deadlines.
+
+3.  Terminology
+
+   Multi-Tenant PKI:  A PKI deployment in which a single platform
+
+
+
+
+
+Vicente                  Expires 7 December 2026                [Page 3]
+
+Internet-Draft      Multi-Tenant PKI PQC Requirements          June 2026
+
+
+      instance hosts certificate authority services for multiple
+      independent organizational tenants, each with isolated certificate
+      policies, trust anchors, and subscriber populations.
+
+   PQC Migration:  The process of replacing quantum-vulnerable
+      cryptographic algorithms (e.g., RSA, ECDSA, ECDH) with post-
+      quantum cryptographic algorithms standardized by NIST (e.g., ML-
+      KEM, ML-DSA, SLH-DSA).
+
+   Configuration Drift:  A condition in which the cryptographic
+      algorithm configuration of one or more active certificates or CA
+      components diverges from the declared cryptographic policy of the
+      tenant or platform operator.
+
+   Hybrid Transitional Configuration:  A cryptographic configuration
+      that combines classical and post-quantum algorithms (e.g., X25519
+      with ML-KEM-768, ECDSA-P256 with ML-DSA-65) as defined in
+      [RFC9794].
+
+   CRQC:  Cryptographically Relevant Quantum Computer.  A quantum
+      computer capable of running Shor's algorithm at sufficient scale
+      to break RSA-2048 and ECDH-P256 in practical time.
+
+4.  Scope and Limitations of Existing Standards
+
+4.1.  ACME (RFC 8555)
+
+   ACME [RFC8555] automates the issuance, renewal, and revocation of
+   certificates by specifying challenge-response domain ownership
+   verification.  ACME does not specify:
+
+   *  Enforcement of algorithm policy at the per-issuance-transaction
+      level.
+
+   *  Detection of divergence between a certificate's algorithm and the
+      issuing CA's current declared policy.
+
+   *  Coordination protocols for rotating certificates across multiple
+      tenants in dependency order.
+
+4.2.  X.509 and RFC 5280
+
+   [RFC5280] defines the X.509 certificate and CRL profile.  It
+   specifies certificate structure and validation, but does not address:
+
+   *  Real-time detection of certificates whose algorithms are
+      inconsistent with a CA's current policy.
+
+
+
+
+Vicente                  Expires 7 December 2026                [Page 4]
+
+Internet-Draft      Multi-Tenant PKI PQC Requirements          June 2026
+
+
+   *  Mechanisms to gate certificate issuance based on a policy-
+      compliance precondition.
+
+4.3.  Cryptographic Algorithm Agility (RFC 7696)
+
+   [RFC7696] provides guidelines for implementing algorithm agility in
+   IETF protocols — specifically, the ability to select and negotiate
+   cryptographic algorithms without hard-coded dependencies.  It does
+   not specify:
+
+   *  How a CA system should enforce algorithm agility requirements
+      uniformly across all tenants in a multi-tenant deployment.
+
+   *  How consistency of algorithm selections across a distributed
+      certificate population should be monitored or enforced.
+
+4.4.  Related Certificates (RFC 9763)
+
+   [RFC9763] defines the RelatedCertificate X.509 extension, which
+   allows two certificates with different algorithms to be
+   cryptographically linked.  This supports dual-algorithm operation
+   during PQC transition but does not address the coordination and
+   scheduling concerns identified in this document.
+
+4.5.  Hybrid Scheme Terminology (RFC 9794)
+
+   [RFC9794] establishes terminology for post-quantum and traditional
+   hybrid cryptographic schemes.  This document uses that terminology
+   but addresses a separate problem: the operational management gap in
+   migrating multi-tenant PKI systems to PQC.
+
+5.  Functional Requirements
+
+   A solution addressing the gaps identified in Section 3 SHOULD satisfy
+   the following functional requirements:
+
+5.1.  Algorithm Policy Consistency
+
+   REQ-1: The system MUST be capable of detecting, for each active
+   certificate in a tenant's issued certificate population, whether the
+   certificate's algorithms are consistent with the tenant's current
+   cryptographic policy.
+
+   REQ-2: The system MUST provide a per-tenant view of algorithm
+   consistency across the entire active certificate population.
+
+
+
+
+
+
+Vicente                  Expires 7 December 2026                [Page 5]
+
+Internet-Draft      Multi-Tenant PKI PQC Requirements          June 2026
+
+
+5.2.  Issuance Integrity
+
+   REQ-3: The system SHOULD support a mechanism by which a certificate
+   issuance request can be evaluated for compliance with the issuing
+   tenant's current algorithm policy before the certificate is issued.
+
+   REQ-4: The system SHOULD maintain per-issuance-transaction audit
+   records sufficient to demonstrate that each issued certificate was
+   algorithm-compliant at the time of issuance.
+
+5.3.  Rotation Coordination
+
+   REQ-5: The system MUST provide a mechanism for ordering certificate
+   rotation actions across a multi-tenant environment to avoid service
+   disruption caused by rotating certificates in an order that violates
+   trust chain or service dependency constraints.
+
+   REQ-6: The system SHOULD support awareness of the network topology
+   context in which certificates are deployed to inform the sequencing
+   of rotation operations.
+
+5.4.  Compliance Reporting
+
+   REQ-7: The system MUST support mapping of each tenant's algorithm
+   posture against applicable compliance deadline frameworks (e.g., CNSA
+   2.0) and provide gap reports identifying certificates and CA
+   components that require migration before specific deadlines.
+
+   REQ-8: The system SHOULD provide aggregate and per-tenant compliance
+   progress metrics suitable for regulatory reporting.
+
+6.  Security Considerations
+
+   The primary threat model motivating this document is the harvest-now,
+   decrypt-later (HNDL) attack, in which an adversary captures
+   ciphertext protected by quantum-vulnerable algorithms today with the
+   intention of decrypting it once a CRQC becomes available.  Long-lived
+   certificates and CA signing keys that remain in use beyond the
+   anticipated CRQC arrival window are particularly exposed.
+
+   Mosca's inequality [MOSCA] provides a practical framework for urgency
+   assessment: if the sum of the time required to complete PQC migration
+   and the remaining confidentiality lifetime of sensitive data exceeds
+   the estimated time to CRQC availability, then migration is overdue.
+   A multi-tenant PKI environment amplifies this risk because a single
+   unrotated CA signing key may protect the entire trust anchor for
+   multiple tenants.
+
+
+
+
+Vicente                  Expires 7 December 2026                [Page 6]
+
+Internet-Draft      Multi-Tenant PKI PQC Requirements          June 2026
+
+
+   Any mechanism that gates certificate issuance based on policy
+   compliance introduces a denial-of-service vector: a misconfigured or
+   overly restrictive policy could block legitimate certificate
+   issuance.  Implementations MUST provide auditable override mechanisms
+   and alerting to prevent silent issuance failures.
+
+   Multi-tenant isolation MUST be preserved at the algorithm policy
+   layer: a drift condition in one tenant MUST NOT trigger issuance
+   blocks in other tenants.
+
+7.  IANA Considerations
+
+   This document has no IANA actions.  Future work specifying protocol
+   extensions to address the requirements in Section 5 may require IANA
+   registration of new ACME extensions, X.509 extensions, or CMS
+   attributes.
+
+8.  References
+
+8.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", RFC 8174, May 2017,
+              <https://www.rfc-editor.org/rfc/rfc8174>.
+
+   [RFC5280]  Cooper, D., "Internet X.509 PKI Certificate and
+              Certificate Revocation List (CRL) Profile", RFC 5280, May
+              2008, <https://www.rfc-editor.org/rfc/rfc5280>.
+
+   [RFC8555]  Barnes, R., "Automatic Certificate Management Environment
+              (ACME)", RFC 8555, March 2019,
+              <https://www.rfc-editor.org/rfc/rfc8555>.
+
+   [RFC7696]  Housley, R., "Guidelines for Cryptographic Algorithm
+              Agility and Selecting Mandatory-to-Implement Algorithms",
+              RFC 7696, November 2015,
+              <https://www.rfc-editor.org/rfc/rfc7696>.
+
+   [RFC9763]  Ounsworth, M., "Related Certificates for Use in Multiple
+              Authentications within a Protocol", RFC 9763, April 2025,
+              <https://www.rfc-editor.org/rfc/rfc9763>.
+
+
+
+
+
+
+Vicente                  Expires 7 December 2026                [Page 7]
+
+Internet-Draft      Multi-Tenant PKI PQC Requirements          June 2026
+
+
+   [RFC9794]  Hale, N., "Terminology for Post-Quantum Traditional Hybrid
+              Schemes", RFC 9794, June 2025,
+              <https://www.rfc-editor.org/rfc/rfc9794>.
+
+   [RFC5272]  Schaad, J., "Certificate Management over CMS (CMC)",
+              RFC 5272, June 2008,
+              <https://www.rfc-editor.org/rfc/rfc5272>.
+
+8.2.  Informative References
+
+   [MOSCA]    Mosca, M., "Cybersecurity in an Era with Quantum
+              Computers: Will We Be Ready?", IEEE Security and
+              Privacy 16(5):38-41, 2018.
+
+   [CNSA20]   NSA, "Commercial National Security Algorithm Suite 2.0",
+              NSA CNSA 2.0, September 2022.
+
+   [NIST-PQC] NIST, "Post-Quantum Cryptography Standards: FIPS 203, 204,
+              205", NIST FIPS 203/204/205, August 2024.
+
+Author's Address
+
+   Brian Vicente
+   Sanctum SecOps LLC
+   Pine City, NY
+   United States of America
+   Email: info@sanctumsecops.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Vicente                  Expires 7 December 2026                [Page 8]
