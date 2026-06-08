@@ -22,6 +22,7 @@ author:
     name: Brian Vicente
     organization: Sanctum SecOps LLC
     email: bvicente@sanctumsecops.com
+    uri: https://orcid.org/0009-0006-6395-5308
     city: Pine City
     region: NY
     country: United States of America
@@ -256,16 +257,74 @@ progress metrics suitable for regulatory reporting.
 
 # IPR Considerations
 
-The author may hold or apply for patents covering subject matter related to
-this document. Disclosure of any such patents will be made in accordance with
-the procedures defined in BCP 79. Publication of this Internet-Draft does not
-constitute any patent license, express or implied, from the author. License
-terms, if any, are not yet known.
+The author and Sanctum SecOps LLC hold or have applied for patents covering
+subject matter related to this document. Specifically, the subject matter
+herein overlaps in part with the disclosure of U.S. Provisional Patent
+Application No. 64/080,137 ("Multi-Tenant Public Key Infrastructure with
+Drift-Gated Issuance, Per-Transaction Semantic Consistency Verification, and
+Topology-Aware Post-Quantum Certificate Rotation", filed 2026-06-01) and U.S.
+Patent Application No. 19/698,870 ("System and Method for Post-Quantum
+Cryptographic Readiness Observability and Feedback in Networked Environments",
+attorney docket SANC-2026-002, filed 2026-06-05).
+
+Disclosure of any such patents will be made in accordance with the procedures
+defined in BCP 79. Publication of this Internet-Draft does not constitute any
+patent license, express or implied, from the author or Sanctum SecOps LLC.
+License terms, if any, are not yet known.
 
 This work product is the original work of the named author and is offered to
 the IETF community as an Independent Submission. No portion of this document
 is offered as a trade secret. All technical disclosures herein are intended
 as public prior art as of the publication date of the initial -00 revision.
+
+# Patent-Pending Claim Scope (Informational)
+
+The following claim families are subject to the pending United States patent
+applications identified above. This summary is provided to inform implementers
+of the protected scope; it is not an enabling disclosure and does not waive
+any patent right. The specific algorithms, parameter values, weights,
+thresholds, predicates, sequencing rules, and binding logic that practice
+these claims are not disclosed in this Internet-Draft.
+
+Family A — Policy-to-CA Compiler: apparatus, method, and non-transitory
+computer-readable medium claims directed to compiling a declarative
+multi-tenant cryptographic policy into per-tenant certificate-authority
+configuration in a manner that preserves tenant isolation and produces
+auditable evidence of compilation correctness.
+
+Family B — Drift-Gated Certificate Issuance with Per-Transaction Semantic
+Consistency: apparatus, method, and computer-readable medium claims directed
+to gating certificate issuance on detection of configuration drift between a
+tenant's declared cryptographic policy and the cryptographic material proposed
+for issuance.
+
+Family C — Crypto-Agile Post-Quantum Migration with Topology-Aware Rotation:
+apparatus, method, and computer-readable medium claims directed to
+coordinating post-quantum certificate rotation across multi-tenant PKI
+deployments in a manner that accounts for service-dependency topology.
+
+Family D — Policy-Linked Audit Engine: apparatus, method, and
+computer-readable medium claims directed to producing tenant-isolated,
+per-transaction audit records that cryptographically bind certificate
+issuance, renewal, and rotation events to the policy version in force.
+
+Nothing in this Internet-Draft is to be construed as disclosing the manner
+in which any of the above claims is reduced to practice.
+
+# Author Credentials
+
+The author holds the following industry certifications, independently
+verifiable through Pearson Credly at <https://www.credly.com/users/brian-vicente>:
+
+* CompTIA Security+ ce (2026-03-29 / valid through 2029-03-29)
+* CompTIA Secure Infrastructure Specialist - CSIS Stackable (2026-03-29 / valid through 2029-03-29)
+* CompTIA Secure Cloud Professional - CSCP Stackable (2026-03-29 / valid through 2027-06-29)
+* CompTIA Cloud Admin Professional - CCAP Stackable (2025-10-10 / valid through 2027-06-29)
+* CompTIA IT Operations Specialist - CIOS Stackable (2025-10-10 / valid through 2029-03-29)
+* CompTIA Network+ ce (2025-10-10 / valid through 2029-03-29)
+* CompTIA Cloud+ ce (2024-06-29 / valid through 2027-06-29)
+* Linux Professional Institute Linux Essentials (2024-01-16)
+* CompTIA A+ ce (2023-10-16 / valid through 2029-10-16)
 
 # Security Considerations
 
