@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude"
+     category="info"
+     docName="draft-vicente-pquip-multitenant-pki-requirements-02"
+     ipr="trust200902"
+     submissionType="independent"
+     xml:lang="en"
+     version="3">
+
+  <front>
+    <title abbrev="Multi-Tenant PKI PQC Requirements">Requirements and Gaps for Post-Quantum Certificate Rotation in Multi-Tenant Public Key Infrastructure Environments</title>
+
+    <seriesInfo name="Internet-Draft" value="draft-vicente-pquip-multitenant-pki-requirements-02"/>
+
+    <author initials="B." surname="Vicente" fullname="Brian Vicente">
+      <organization>Sanctum SecOps LLC</organization>
+      <address>
+        <postal>
+          <city>Pine City</city>
+          <region>NY</region>
+          <country>United States of America</country>
+        </postal>
+        <email>bvicente@sanctumsecops.com</email>
+        <uri>https://orcid.org/0009-0006-6395-5308</uri>
+      </address>
+    </author>
+
+    <date year="2026" month="June" day="8"/>
+
+    <area>Security</area>
+    <workgroup>Post-Quantum Use In Protocols</workgroup>
+
+    <keyword>post-quantum</keyword>
+    <keyword>PQC</keyword>
+    <keyword>PKI</keyword>
+    <keyword>multi-tenant</keyword>
+    <keyword>certificate rotation</keyword>
+    <keyword>ACME</keyword>
+    <keyword>CNSA 2.0</keyword>
+
+    <abstract>
+      <t>Organizations operating Public Key Infrastructure (PKI) across multiple isolated
+tenant environments face a critical gap: existing PKI management protocols and standards do
+not address the coordination requirements for post-quantum cryptographic (PQC) algorithm
+migration in shared, multi-tenant certificate authority deployments. This document identifies
+the functional requirements and open protocol gaps that must be addressed to enable safe,
+consistent, and auditable PQC certificate rotation across multi-tenant PKI environments.
+No new protocol mechanisms are specified; this is an informational requirements document
+intended to motivate future standards work.</t>
+    </abstract>
+
+    <note title="Source and Archival" removeInRFC="true">
+      <t>
+        Source for this draft is maintained at
+        <eref target="https://github.com/Sanc-Admin/pquip-multitenant-pki-requirements">https://github.com/Sanc-Admin/pquip-multitenant-pki-requirements</eref>.
+        A citable archival version of this document is available at Zenodo:
+        <eref target="https://doi.org/10.5281/zenodo.20584893">https://doi.org/10.5281/zenodo.20584893</eref>.
+        Author ORCID iD:
+        <eref target="https://orcid.org/0009-0006-6395-5308">https://orcid.org/0009-0006-6395-5308</eref>.
+      </t>
+      <t>
+        Discussion of this document occurs on the IETF "pqc" mailing list
+        (pqc@ietf.org). Issues and pull requests may be filed at the GitHub
+        repository linked above.
+      </t>
+    </note>
+
+    <note title="IPR Considerations" removeInRFC="true">
+      <t>
+        The author has filed or intends to file United States patent applications
+        covering subject matter described in this document. By posting this
+        Internet-Draft, the author submits to the IETF Trust the rights described
+        in Section 5 of BCP 78 and BCP 79. Patent licensing terms are not yet known.
+        Implementers and reviewers should consult the IETF Datatracker IPR
+        disclosure page for this document for current disclosure status.
+      </t>
+    </note>
+
+  </front>
+
+  <middle>
+
+    <section anchor="introduction">
+      <name>Introduction</name>
+      <t>The publication of NIST FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), and
+FIPS 205 (SLH-DSA) in 2024 has initiated a global transition away
+from quantum-vulnerable cryptographic algorithms toward post-quantum
+alternatives.  For organizations operating certificate authority (CA)
+infrastructure, this transition requires replacing classical key
+exchange and signature algorithms across all issued certificates,
+OCSP responders, CRL signing keys, and TLS endpoints before
+applicable regulatory deadlines.</t>
+
+      <t>The NSA Commercial National Security Algorithm Suite 2.0 (CNSA 2.0) <xref target="CNSA20"/>
+establishes concrete migration deadlines: PQC algorithms are required
+for software and firmware signing by 2027, for TLS and certificate
+infrastructure by 2029, and classical algorithm use is to be retired
+by 2033.</t>
+
+      <t>Multi-tenant PKI deployments &#8212; where a single CA platform issues
+certificates for multiple independent organizational tenants with
+isolated trust anchors and policy domains &#8212; present unique
+coordination challenges not addressed by existing IETF protocols.
+This document describes those challenges and derives functional
+requirements for a compliant solution.</t>
+
+      <section anchor="requirements-language">
+        <name>Requirements Language</name>
+        <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+"SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+"OPTIONAL" in this document are to be interpreted as described in BCP
+14 <xref target="RFC2119"/> <xref target="RFC8174"/> when, and only when, they appear in all
+capitals.</t>
+      </section>
+    </section>
+
+    <section anchor="problem-statement">
+      <name>Problem Statement</name>
+      <t>Existing PKI management protocols &#8212; including the Automatic
+Certificate Management Environment (ACME) <xref target="RFC8555"/>, Certificate
+Management over CMS (CMC) <xref target="RFC5272"/>, and the base X.509 profile
+<xref target="RFC5280"/> &#8212; were designed for single-tenant or hierarchically-managed
+CA environments.  They do not specify:</t>
+      <ul>
+        <li>Mechanisms to detect and report algorithm configuration divergence
+   between the CA policy and the algorithms in use across active
+   tenant certificate populations (configuration drift).</li>
+        <li>Procedures to ensure that a certificate issuance transaction
+   maintains semantic consistency with the issuing tenant's declared
+   cryptographic policy at the time of issuance.</li>
+        <li>Protocols for coordinating the sequencing of certificate rotation
+   actions across tenants in a manner that accounts for network
+   topology and service dependency constraints.</li>
+        <li>Audit mechanisms that provide tenant-isolated, per-transaction
+   evidence of algorithm compliance at issuance time.</li>
+      </ul>
+      <t>Without addressing these gaps, a multi-tenant PKI operator has no
+standardized mechanism to guarantee that all tenants have completed
+PQC migration in a coordinated, consistent, and auditable manner
+before regulatory deadlines.</t>
+    </section>
+
+    <section anchor="terminology">
+      <name>Terminology</name>
+      <dl>
+        <dt>Multi-Tenant PKI:</dt>
+        <dd>A PKI deployment in which a single platform instance hosts certificate authority
+services for multiple independent organizational tenants, each with isolated certificate
+policies, trust anchors, and subscriber populations.</dd>
+        <dt>PQC Migration:</dt>
+        <dd>The process of replacing quantum-vulnerable cryptographic algorithms (e.g., RSA,
+ECDSA, ECDH) with post-quantum cryptographic algorithms standardized by NIST
+(e.g., ML-KEM, ML-DSA, SLH-DSA).</dd>
+        <dt>Configuration Drift:</dt>
+        <dd>A condition in which the cryptographic algorithm configuration of one or more
+active certificates or CA components diverges from the declared cryptographic policy of
+the tenant or platform operator.</dd>
+        <dt>Hybrid Transitional Configuration:</dt>
+        <dd>A cryptographic configuration that combines classical and post-quantum algorithms
+(e.g., X25519 with ML-KEM-768, ECDSA-P256 with ML-DSA-65) as defined in <xref target="RFC9794"/>.</dd>
+        <dt>CRQC:</dt>
+        <dd>Cryptographically Relevant Quantum Computer.  A quantum computer capable of running
+Shor's algorithm at sufficient scale to break RSA-2048 and ECDH-P256 in practical time.</dd>
+      </dl>
+    </section>
+
+    <section anchor="scope">
+      <name>Scope and Limitations of Existing Standards</name>
+      <section anchor="acme">
+        <name>ACME (RFC 8555)</name>
+        <t>ACME <xref target="RFC8555"/> automates the issuance, renewal, and revocation of
+certificates by specifying challenge-response domain ownership verification.
+ACME does not specify:</t>
+        <ul>
+          <li>Enforcement of algorithm policy at the per-issuance-transaction level.</li>
+          <li>Detection of divergence between a certificate's algorithm and the issuing
+CA's current declared policy.</li>
+          <li>Coordination protocols for rotating certificates across multiple tenants
+in dependency order.</li>
+        </ul>
+      </section>
+
+      <section anchor="x509">
+        <name>X.509 and RFC 5280</name>
+        <t><xref target="RFC5280"/> defines the X.509 certificate and CRL profile.  It
+specifies certificate structure and validation, but does not address:</t>
+        <ul>
+          <li>Real-time detection of certificates whose algorithms are inconsistent with
+a CA's current policy.</li>
+          <li>Mechanisms to gate certificate issuance based on a policy-compliance precondition.</li>
+        </ul>
+      </section>
+
+      <section anchor="algorithm-agility">
+        <name>Cryptographic Algorithm Agility (RFC 7696)</name>
+        <t><xref target="RFC7696"/> provides guidelines for implementing algorithm agility in
+IETF protocols &#8212; specifically, the ability to select and negotiate cryptographic
+algorithms without hard-coded dependencies.  It does not specify:</t>
+        <ul>
+          <li>How a CA system should enforce algorithm agility requirements uniformly across
+all tenants in a multi-tenant deployment.</li>
+          <li>How consistency of algorithm selections across a distributed certificate
+population should be monitored or enforced.</li>
+        </ul>
+      </section>
+
+      <section anchor="related-certs">
+        <name>Related Certificates (RFC 9763)</name>
+        <t><xref target="RFC9763"/> defines the RelatedCertificate X.509 extension, which
+allows two certificates with different algorithms to be cryptographically linked.
+This supports dual-algorithm operation during PQC transition but does not address
+the coordination and scheduling concerns identified in this document.</t>
+      </section>
+
+      <section anchor="hybrid-terminology">
+        <name>Hybrid Scheme Terminology (RFC 9794)</name>
+        <t><xref target="RFC9794"/> establishes terminology for post-quantum and traditional
+hybrid cryptographic schemes.  This document uses that terminology but addresses a
+separate problem: the operational management gap in migrating multi-tenant PKI
+systems to PQC.</t>
+      </section>
+    </section>
+
+    <section anchor="requirements">
+      <name>Functional Requirements</name>
+      <t>A solution addressing the gaps identified in <xref target="scope"/> SHOULD satisfy
+the following functional requirements:</t>
+
+      <section anchor="req-policy">
+        <name>Algorithm Policy Consistency</name>
+        <t>REQ-1: The system MUST be capable of detecting, for each active
+certificate in a tenant's issued certificate population, whether the
+certificate's algorithms are consistent with the tenant's current
+cryptographic policy.</t>
+        <t>REQ-2: The system MUST provide a per-tenant view of algorithm
+consistency across the entire active certificate population.</t>
+      </section>
+
+      <section anchor="req-issuance">
+        <name>Issuance Integrity</name>
+        <t>REQ-3: The system SHOULD support a mechanism by which a certificate
+issuance request can be evaluated for compliance with the issuing
+tenant's current algorithm policy before the certificate is issued.</t>
+        <t>REQ-4: The system SHOULD maintain per-issuance-transaction audit
+records sufficient to demonstrate that each issued certificate was
+algorithm-compliant at the time of issuance.</t>
+      </section>
+
+      <section anchor="req-rotation">
+        <name>Rotation Coordination</name>
+        <t>REQ-5: The system MUST provide a mechanism for ordering certificate
+rotation actions across a multi-tenant environment to avoid service
+disruption caused by rotating certificates in an order that violates
+trust chain or service dependency constraints.</t>
+        <t>REQ-6: The system SHOULD support awareness of the network topology
+context in which certificates are deployed to inform the sequencing
+of rotation operations.</t>
+      </section>
+
+      <section anchor="req-compliance">
+        <name>Compliance Reporting</name>
+        <t>REQ-7: The system MUST support mapping of each tenant's algorithm
+posture against applicable compliance deadline frameworks (e.g., CNSA
+2.0) and provide gap reports identifying certificates and CA
+components that require migration before specific deadlines.</t>
+        <t>REQ-8: The system SHOULD provide aggregate and per-tenant compliance
+progress metrics suitable for regulatory reporting.</t>
+      </section>
+    </section>
+
+    <section anchor="ipr-considerations">
+      <name>IPR Considerations</name>
+      <t>The author may hold or apply for patents covering subject matter related to
+this document. Disclosure of any such patents will be made in accordance with
+the procedures defined in BCP 79. Publication of this Internet-Draft does not
+constitute any patent license, express or implied, from the author. License
+terms, if any, are not yet known.</t>
+      <t>This work product is the original work of the named author and is offered to
+the IETF community as an Independent Submission. No portion of this document
+is offered as proprietary or confidential. All technical disclosures herein
+are intended as public contributions to the IETF standards process and
+constitute public prior art as of the publication date of the initial -00 revision.</t>
+    </section>
+
+    <section anchor="security-considerations">
+      <name>Security Considerations</name>
+      <t>The primary threat model motivating this document is the harvest-now,
+decrypt-later (HNDL) attack, in which an adversary captures
+ciphertext protected by quantum-vulnerable algorithms today with the
+intention of decrypting it once a CRQC becomes available.  Long-lived
+certificates and CA signing keys that remain in use beyond the
+anticipated CRQC arrival window are particularly exposed.</t>
+      <t>Mosca's inequality <xref target="MOSCA"/> provides a practical framework for urgency
+assessment: if the sum of the time required to complete PQC migration
+and the remaining confidentiality lifetime of sensitive data exceeds
+the estimated time to CRQC availability, then migration is overdue.
+A multi-tenant PKI environment amplifies this risk because a single
+unrotated CA signing key may protect the entire trust anchor for
+multiple tenants.</t>
+      <t>Any mechanism that gates certificate issuance based on policy
+compliance introduces a denial-of-service vector: a misconfigured or
+overly restrictive policy could block legitimate certificate
+issuance.  Implementations MUST provide auditable override mechanisms
+and alerting to prevent silent issuance failures.</t>
+      <t>Multi-tenant isolation MUST be preserved at the algorithm policy
+layer: a drift condition in one tenant MUST NOT trigger issuance
+blocks in other tenants.</t>
+    </section>
+
+    <section anchor="iana-considerations">
+      <name>IANA Considerations</name>
+      <t>This document has no IANA actions.  Future work specifying protocol
+extensions to address the requirements in <xref target="requirements"/> may require IANA
+registration of new ACME extensions, X.509 extensions, or CMS attributes.</t>
+    </section>
+
+  </middle>
+
+  <back>
+
+    <references>
+      <name>References</name>
+      <references>
+        <name>Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/rfc/rfc2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author initials="S." surname="Bradner" fullname="S. Bradner"/>
+            <date year="1997" month="March"/>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/rfc/rfc8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author initials="B." surname="Leiba" fullname="B. Leiba"/>
+            <date year="2017" month="May"/>
+          </front>
+          <seriesInfo name="RFC" value="8174"/>
+        </reference>
+        <reference anchor="RFC5280" target="https://www.rfc-editor.org/rfc/rfc5280">
+          <front>
+            <title>Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile</title>
+            <author initials="D." surname="Cooper" fullname="D. Cooper"/>
+            <date year="2008" month="May"/>
+          </front>
+          <seriesInfo name="RFC" value="5280"/>
+        </reference>
+        <reference anchor="RFC8555" target="https://www.rfc-editor.org/rfc/rfc8555">
+          <front>
+            <title>Automatic Certificate Management Environment (ACME)</title>
+            <author initials="R." surname="Barnes" fullname="R. Barnes"/>
+            <date year="2019" month="March"/>
+          </front>
+          <seriesInfo name="RFC" value="8555"/>
+        </reference>
+        <reference anchor="RFC7696" target="https://www.rfc-editor.org/rfc/rfc7696">
+          <front>
+            <title>Guidelines for Cryptographic Algorithm Agility and Selecting Mandatory-to-Implement Algorithms</title>
+            <author initials="R." surname="Housley" fullname="R. Housley"/>
+            <date year="2015" month="November"/>
+          </front>
+          <seriesInfo name="RFC" value="7696"/>
+        </reference>
+        <reference anchor="RFC9763" target="https://www.rfc-editor.org/rfc/rfc9763">
+          <front>
+            <title>Related Certificates for Use in Multiple Authentications within a Protocol</title>
+            <author initials="M." surname="Ounsworth" fullname="M. Ounsworth"/>
+            <date year="2025" month="April"/>
+          </front>
+          <seriesInfo name="RFC" value="9763"/>
+        </reference>
+        <reference anchor="RFC9794" target="https://www.rfc-editor.org/rfc/rfc9794">
+          <front>
+            <title>Terminology for Post-Quantum Traditional Hybrid Schemes</title>
+            <author initials="N." surname="Hale" fullname="N. Hale"/>
+            <date year="2025" month="June"/>
+          </front>
+          <seriesInfo name="RFC" value="9794"/>
+        </reference>
+        <reference anchor="RFC5272" target="https://www.rfc-editor.org/rfc/rfc5272">
+          <front>
+            <title>Certificate Management over CMS (CMC)</title>
+            <author initials="J." surname="Schaad" fullname="J. Schaad"/>
+            <date year="2008" month="June"/>
+          </front>
+          <seriesInfo name="RFC" value="5272"/>
+        </reference>
+      </references>
+      <references>
+        <name>Informative References</name>
+        <reference anchor="MOSCA">
+          <front>
+            <title>Cybersecurity in an Era with Quantum Computers: Will We Be Ready?</title>
+            <author initials="M." surname="Mosca" fullname="M. Mosca"/>
+            <date year="2018"/>
+          </front>
+          <seriesInfo name="IEEE Security and Privacy" value="16(5):38-41"/>
+        </reference>
+        <reference anchor="CNSA20">
+          <front>
+            <title>Commercial National Security Algorithm Suite 2.0</title>
+            <author><organization>NSA</organization></author>
+            <date year="2022" month="September"/>
+          </front>
+          <seriesInfo name="NSA" value="CNSA 2.0"/>
+        </reference>
+        <reference anchor="NIST-PQC">
+          <front>
+            <title>Post-Quantum Cryptography Standards: FIPS 203, 204, 205</title>
+            <author><organization>NIST</organization></author>
+            <date year="2024" month="August"/>
+          </front>
+          <seriesInfo name="NIST" value="FIPS 203/204/205"/>
+        </reference>
+      </references>
+    </references>
+
+  </back>
+</rfc>
