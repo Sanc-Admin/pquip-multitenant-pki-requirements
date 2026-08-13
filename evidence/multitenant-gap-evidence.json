@@ -1,0 +1,40 @@
+{
+  "_schema": "sanctum-evidence-v1",
+  "_generated": "2026-08-12T20:42:00Z",
+  "_author": "Brian Vicente <bvicente@sanctumsecops.com>",
+  "_orcid": "https://orcid.org/0009-0006-6395-5308",
+  "_organization": "Sanctum SecOps LLC",
+  "_ipr_notice": "Sanctum SecOps LLC / Brian Vicente may hold or intend to file IP rights covering subject matter herein. Published under BCP 78/79. No license granted by publication.",
+  "_ipr_disclosure_alert": "IPR: 1 disclosure exists on IETF Datatracker for this draft. See https://datatracker.ietf.org/doc/draft-vicente-pquip-multitenant-pki-requirements/ IPR tab.",
+  "draft_series": "draft-vicente-pquip-multitenant-pki-requirements",
+  "current_revision": "-03",
+  "github_repo": "https://github.com/Sanc-Admin/pquip-multitenant-pki-requirements",
+  "core_gap": {
+    "id": "gap-mt-1",
+    "title": "No normative requirements for PQC certificate rotation coordination in multi-tenant PKI",
+    "evidence": [
+      {
+        "source": "RFC8555",
+        "section": "2",
+        "quote": "ACME allows domain name owners to automate the process of obtaining a certificate from a CA.",
+        "relevance": "ACME defines single-entity certificate automation. No multi-tenant coordination requirements are defined."
+      },
+      {
+        "source": "NIST.SP.800-207",
+        "section": "3",
+        "relevance": "ZTA per-tenant policy isolation is a stated goal; no PKI rotation coordination model exists for multi-tenant environments."
+      }
+    ]
+  },
+  "requirements": [
+    {"id": "REQ-MT-1", "title": "Tenant Migration State Isolation"},
+    {"id": "REQ-MT-2", "title": "Tenant-Specific Algorithm-Agility Horizon"},
+    {"id": "REQ-MT-3", "title": "Classical Fallback for Non-Migrated Tenants"},
+    {"id": "REQ-MT-4", "title": "Phased Rollout Sequencing"},
+    {"id": "REQ-MT-5", "title": "Per-Tenant Migration Notification"},
+    {"id": "REQ-MT-6", "title": "Cross-Tenant Revocation Isolation"},
+    {"id": "REQ-MT-7", "title": "ACME Protocol Compatibility"},
+    {"id": "REQ-MT-8", "title": "Dual-Mode Issuance During Transition"},
+    {"id": "REQ-MT-9", "title": "Machine-Readable Migration Metadata"}
+  ]
+}
