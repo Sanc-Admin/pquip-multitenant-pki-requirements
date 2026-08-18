@@ -11,7 +11,7 @@ authors:
     address: "Pine City, NY, USA"
 date-released: 2026-06-05
 url: "https://datatracker.ietf.org/doc/draft-vicente-pquip-multitenant-pki-requirements/"
-repository-code: "https://github.com/Sanc-Admin/pquip-multitenant-pki-requirements"
+repository-code: "https://github.com/sanctumsecopsmssp/pquip-multitenant-pki-requirements"
 keywords:
   - post-quantum cryptography
   - PQC
