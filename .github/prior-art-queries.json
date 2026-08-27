@@ -1,0 +1,78 @@
+{
+  "repo": "pquip-multitenant-pki-requirements",
+  "subject": "Multi-tenant PKI requirements for post-quantum migration: per-tenant certificate rotation, tenant isolation of PQC posture, and shared-CA requirements (PQUIP).",
+  "exclude_name_contains": [
+    "-vicente-"
+  ],
+  "queries": [
+    {
+      "label": "name contains 'multitenant-pki'",
+      "filters": {
+        "name__contains": "multitenant-pki"
+      }
+    },
+    {
+      "label": "title contains 'multi-tenant'",
+      "filters": {
+        "title__icontains": "multi-tenant"
+      },
+      "require_title_any": [
+        "pki",
+        "certificat",
+        "cryptograph",
+        "post-quantum",
+        "pqc",
+        "key management",
+        "ca hierarch"
+      ]
+    },
+    {
+      "label": "title contains 'multitenant'",
+      "filters": {
+        "title__icontains": "multitenant"
+      },
+      "require_title_any": [
+        "pki",
+        "certificat",
+        "cryptograph",
+        "post-quantum",
+        "pqc",
+        "key management",
+        "ca hierarch"
+      ]
+    },
+    {
+      "label": "title contains 'tenant isolation'",
+      "filters": {
+        "title__icontains": "tenant isolation"
+      },
+      "require_title_any": [
+        "pki",
+        "certificat",
+        "cryptograph",
+        "post-quantum",
+        "pqc",
+        "key management",
+        "ca hierarch"
+      ]
+    },
+    {
+      "label": "title contains 'certificate rotation'",
+      "filters": {
+        "title__icontains": "certificate rotation"
+      }
+    },
+    {
+      "label": "PQUIP WG adopted drafts",
+      "filters": {
+        "group__acronym": "pquip"
+      }
+    },
+    {
+      "label": "title contains 'certificate authority requirements'",
+      "filters": {
+        "title__icontains": "certificate authority requirements"
+      }
+    }
+  ]
+}
