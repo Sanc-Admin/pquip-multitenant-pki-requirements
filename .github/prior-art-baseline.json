@@ -1,0 +1,48 @@
+{
+  "seen": {
+    "draft-ietf-pquip-hbs-state": {
+      "rev": "04",
+      "title": "Hash-based Signatures: State and Backup Management",
+      "wg": "pquip",
+      "first_seen": "2026-08-27T19:56:12Z",
+      "last_seen_rev_at": "2026-08-27T19:56:12Z"
+    },
+    "draft-ietf-pquip-hybrid-signature-spectrums": {
+      "rev": "07",
+      "title": "Hybrid signature spectrums",
+      "wg": "pquip",
+      "first_seen": "2026-08-27T19:56:12Z",
+      "last_seen_rev_at": "2026-08-27T19:56:12Z"
+    },
+    "draft-ietf-pquip-pqc-engineers": {
+      "rev": "14",
+      "title": "Post-Quantum Cryptography for Engineers",
+      "wg": "pquip",
+      "first_seen": "2026-08-27T19:56:12Z",
+      "last_seen_rev_at": "2026-08-27T19:56:12Z"
+    },
+    "draft-ietf-pquip-pqc-hsm-constrained": {
+      "rev": "06",
+      "title": "Adapting Constrained Devices for Post-Quantum Cryptography",
+      "wg": "pquip",
+      "first_seen": "2026-08-27T19:56:12Z",
+      "last_seen_rev_at": "2026-08-27T19:56:12Z"
+    },
+    "draft-ietf-pquip-pqt-hybrid-terminology": {
+      "rev": "06",
+      "title": "Terminology for Post-Quantum Traditional Hybrid Schemes",
+      "wg": "pquip",
+      "first_seen": "2026-08-27T19:56:12Z",
+      "last_seen_rev_at": "2026-08-27T19:56:12Z"
+    },
+    "draft-wiggers-hbs-state": {
+      "rev": "02",
+      "title": "Hash-based Signatures: State and Backup Management",
+      "wg": "pquip",
+      "first_seen": "2026-08-27T19:56:12Z",
+      "last_seen_rev_at": "2026-08-27T19:56:12Z"
+    }
+  },
+  "updated": "2026-08-27T19:56:12Z",
+  "queries_source": ".github/prior-art-queries.json"
+}
